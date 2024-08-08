@@ -7,7 +7,7 @@ import 'package:stripe_template/model/payment_method.dart';
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   Stripe.publishableKey =
-      "pk_test_51LQbDxSA4Qahl4YHrMM6xrtMWAZQtMhsKhj6r94jR2Pl9h0AP72VAJUtNXzNMXR7h9c1nC4W9x1tIFNjjHuX6GyV00ZbUOf2LG";
+      "pk_test_51OreidKt4B1OroFCY12ZXXIC1rCApG3kEYsTariS53xwIKHqfz42ZNG8XNmIhCeoZ5P3gssQHgnGZtJ0LSETyXrM00wIr58XdI";
   Stripe.merchantIdentifier = 'any string works';
   await Stripe.instance.applySettings();
   runApp(const MyApp());
@@ -103,7 +103,8 @@ class _StripeHomeState extends State<StripeHome> {
 }
 
 Future<void> updateCard(PaymentMethodCustom method) async {
-  final res = await KingCache.networkRequest('$url/update_card/${method.id}');
+  final res =
+      await KingCache.networkRequest('$url/card/update_card/${method.id}');
   if (!res.status) {
     return;
   }
@@ -130,29 +131,29 @@ Future<void> updateCard(PaymentMethodCustom method) async {
 }
 
 Future<void> removeCard(String id) async {
-  final res = await KingCache.networkRequest('$url/remove_card/$id');
+  final res = await KingCache.networkRequest('$url/card/remove_card/$id');
   if (!res.status) {
     return;
   }
 }
 
 Future<List<PaymentMethodCustom>> getCards() async {
-  final res = await KingCache.networkRequest('$url/payment_methods');
+  final res = await KingCache.networkRequest('$url/card/payment_methods');
   if (!res.status) {
     return [];
   }
-  final cards = res.data["paymentMethods"]['data'] as List<dynamic>? ?? [];
+  final cards = res.data['data'] as List<dynamic>? ?? [];
   return cards.map((e) => PaymentMethodCustom.fromJson(e)).toList();
 }
 
 Future<void> addCard() async {
-  final res = await KingCache.networkRequest('$url/add_card_initiate');
+  final res = await KingCache.networkRequest('$url/card/add_card_initiate');
   if (!res.status) {
     return;
   }
 
-  final setupIntentSecret = res.data['setupIntent'].toString();
-  final ephemeralKey = res.data['ephemeralKey'].toString();
+  final setupIntentSecret = res.data['setupIntentSecret'].toString();
+  final emphemeralKeySecret = res.data['emphemeralKeySecret'].toString();
   final customerId = res.data['customerId'].toString();
 
   await Stripe.instance.initPaymentSheet(
@@ -160,7 +161,7 @@ Future<void> addCard() async {
       merchantDisplayName: 'Stripe Template',
       setupIntentClientSecret: setupIntentSecret,
       customerId: customerId,
-      customerEphemeralKeySecret: ephemeralKey,
+      customerEphemeralKeySecret: emphemeralKeySecret,
       googlePay: const PaymentSheetGooglePay(
         merchantCountryCode: 'DE',
         testEnv: true,
@@ -173,7 +174,7 @@ Future<void> addCard() async {
 }
 
 Future<void> checkout(PaymentMethodCustom method) async {
-  final res = await KingCache.networkRequest('$url/checkout_initiate');
+  final res = await KingCache.networkRequest('$url/card/checkout_initiate');
   if (!res.status) {
     return;
   }
